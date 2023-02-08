@@ -2,7 +2,8 @@ const express = require("express");
 const multer = require("multer");
 var storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
-
+// const upload = multer({ dest: 'uploads/' })
+const fs = require('fs')
 const app = express();
 const PORT =  3001;
 const cors = require("cors")
@@ -19,9 +20,10 @@ app.post("/test", (req, res) => {
     console.log("yes");
 });
 
-app.post("/uploadToS3",upload.single("file"), (req, res) => {
+app.post("/uploadToS3", (req, res) => {
     // let uid = req.headers["user-key"]
-    console.log('body : ', req.filer);
+    console.log('body : ', req.file);
+    // fs.writeFileSync("res.txt",req)
     
 });
 

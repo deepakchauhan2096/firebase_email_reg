@@ -23,12 +23,12 @@ function Home(props) {
         inputFiles.push(selectedFile);
         reader.readAsDataURL(selectedFile);
         setFile(inputFiles);
-        // reader.onloadend = () => {
-        //   console.log("reader result", reader.result);
-        //   imagePreviewUrls.push(reader.result);
-        //   setFile(inputFiles);
-        //   setImagePreviewUrl(imagePreviewUrls);
-        // };
+        reader.onloadend = () => {
+          console.log("reader result", reader.result);
+          imagePreviewUrls.push(reader.result);
+          setFile(inputFiles);
+          setImagePreviewUrl(imagePreviewUrls);
+        };
       });
       // setTimeout(() => {
       //   setFile(inputFiles);
@@ -41,9 +41,11 @@ function Home(props) {
 
   const scanInvoice = () => {
     const postImage = async () => {
+      console.log("file >>> : ",file)
       const filenames = await Promise.all(
-        file?.map(async (inputFile) => {
+        file.map(async (inputFile) => {
           try {
+            console.log("inputFile : ",inputFile)
             const res = await tesseractService.PostImage(inputFile);
             setInvoiceImgUrls((prev) => [
               ...prev,
@@ -77,7 +79,16 @@ function Home(props) {
       <input
         type="file"
         multiple
-        onChange={(e) => handleFileChange(e.target.files)}
+        accept="image/*"
+        name="image"
+        onChange={(e) =>{
+          console.log(">>>> ",e)
+          console.log(">>>> ",e.target)
+          console.log(">>>> ",e.target.value)
+          console.log(">>>> ",e.target.files)
+          console.log(">>>> ",e.target.files[0])
+          handleFileChange(e.target.files)
+        }}
       />
       <button onClick={scanInvoice}>Upload</button>
       <button onClick={() => console.log(file)}>console</button>
