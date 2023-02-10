@@ -1,3 +1,4 @@
+import { async } from "@firebase/util";
 import React, { useState } from "react";
 import { TesseractService } from "./TesseractService";
 
@@ -5,19 +6,16 @@ function Home(props) {
   const [file, setFile] = useState([]);
   const [imagePreviewUrl, setImagePreviewUrl] = useState([]);
   const [filename, setFilename] = useState(null);
-  const [invoiceImgUrls, setInvoiceImgUrls] = useState([]);
-
+  const [ocrData, setOcrData] = useState();
   const tesseractService = new TesseractService();
 
   const handleFileChange = async (files) => {
     console.log("files : ", files);
     files = Object.values(files);
     console.log("files2 : ", files);
-
     if (files.length <= 9) {
       const inputFiles = [];
       const imagePreviewUrls = [];
-      
       files.forEach((selectedFile) => {
         let reader = new FileReader();
         inputFiles.push(selectedFile);
@@ -30,10 +28,6 @@ function Home(props) {
           setImagePreviewUrl(imagePreviewUrls);
         };
       });
-      // setTimeout(() => {
-      //   setFile(inputFiles);
-      //   setImagePreviewUrl(imagePreviewUrls);
-      // }, 1000);
     } else {
       alert("Select only upto 9 files");
     }
@@ -41,20 +35,15 @@ function Home(props) {
 
   const scanInvoice = () => {
     const postImage = async () => {
-      console.log("file >>> : ",file)
+      console.log("file >>> : ", file);
       const filenames = await Promise.all(
         file.map(async (inputFile) => {
           try {
-            console.log("inputFile : ",inputFile)
+            console.log("inputFile : ", inputFile);
             const res = await tesseractService.PostImage(inputFile);
-            setInvoiceImgUrls((prev) => [
-              ...prev,
-              res.message.imageURL.Location,
-            ]);
             return res.filename;
           } catch (error) {
             console.log("error fetching descripton", error);
-            // return null;
             throw new Error("error");
           }
         })
@@ -72,6 +61,23 @@ function Home(props) {
       });
   };
 
+  const getOcrData = async () => {
+    alert("wait for 60 sec. ");
+    try {
+      const res = await tesseractService.GetDataFromOcr();
+      setOcrData(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const blockTypeMap = {
+    KEY_VALUE_SET: "Key-Value Set",
+    PAGE: "Page",
+    LINE: "Line",
+    WORD: "Word",
+    TABLE: "Table"
+  };
+
   return (
     <div>
       <h2>{props.name ? `Welcome - ${props.name}` : "Login please"}</h2>
@@ -81,17 +87,32 @@ function Home(props) {
         multiple
         accept="image/*"
         name="image"
-        onChange={(e) =>{
-          console.log(">>>> ",e)
-          console.log(">>>> ",e.target)
-          console.log(">>>> ",e.target.value)
-          console.log(">>>> ",e.target.files)
-          console.log(">>>> ",e.target.files[0])
-          handleFileChange(e.target.files)
+        onChange={(e) => {
+          handleFileChange(e.target.files);
         }}
       />
       <button onClick={scanInvoice}>Upload</button>
-      <button onClick={() => console.log(file)}>console</button>
+      <br />
+      <br />
+      <button onClick={() => console.log(ocrData)}>console</button>
+      <br />
+      <button onClick={getOcrData}> get data from ocr</button>
+      {ocrData ? (
+        <h1>Data found:</h1>
+      ) : (
+        <h1> Press, "get data from ocr" and wait till you see data.</h1>
+      )}
+      <div style={{ padding: "2%" }}>
+        {ocrData?.message.body.Blocks.map((e, index) =>
+          
+            e.BlockType === "LINE" ? (
+              <h6 key={index}>{e.Text}</h6>
+            ) : null
+         
+        )}
+
+
+      </div>
     </div>
   );
 }
