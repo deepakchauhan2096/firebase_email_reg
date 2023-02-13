@@ -70,12 +70,93 @@ function Home(props) {
       console.log(error);
     }
   };
-  const blockTypeMap = {
-    KEY_VALUE_SET: "Key-Value Set",
-    PAGE: "Page",
-    LINE: "Line",
-    WORD: "Word",
-    TABLE: "Table"
+
+  var Key_Value_Block = [];
+  var Key_only_objects = [];
+  let key_value_ids_only = [];
+  let temp_id_holder = [];
+  let temp_value_id_holder = [];
+  let all_Key_value_ids = [];
+  let word_from_key;
+  let temp_value_id_store;
+  let temp_selected_only;
+  let final_array = [];
+
+  const find_words_for_key_value = () => {
+    final_array = [];
+    all_Key_value_ids.map((values) => {
+      values.key.map((id) => {
+        ocrData?.message.body.Blocks.map((e) => {
+          if (e.BlockType === "WORD") {
+            if (e.Id === id.id) {
+              word_from_key = e.Text;
+            }
+          }
+        });
+      });
+
+      all_Key_value_ids[0].value.map((id) => {
+        ocrData?.message.body.Blocks.map((e) => {
+          if (e.Id === id.id) {
+            e.Relationships.map((ref_id) => {
+              temp_value_id_store = ref_id.Ids;
+            });
+          }
+          if (temp_value_id_store == e.Id) {
+            temp_selected_only = e.Text ?? e.SelectionStatus;
+          }
+        });
+      });
+      final_array.push({ key: word_from_key, value: temp_selected_only });
+    });
+    if (final_array) {
+      console.log(final_array);
+    }
+  };
+
+  const find_Child = () => {
+    all_Key_value_ids = [];
+    Key_only_objects.map((keys) => {
+      keys.Relationships.map((child) => {
+        if (child.Type === "CHILD") {
+          temp_id_holder = [];
+          child.Ids.map((id) => {
+            temp_id_holder.push({ id });
+          });
+        }
+        if (child.Type === "VALUE") {
+          temp_value_id_holder = [];
+          child.Ids.map((id) => {
+            temp_value_id_holder.push({ id });
+          });
+        }
+        key_value_ids_only = {
+          key: temp_id_holder,
+          value: temp_value_id_holder,
+        };
+      });
+      all_Key_value_ids.push(key_value_ids_only);
+    });
+    // console.log(all_Key_value_ids);
+    find_words_for_key_value();
+  };
+  const Filter_KEY_EntityTypes = () => {
+    Key_only_objects = [];
+    Key_Value_Block.map((e) => {
+      if (e.EntityTypes[0] === "KEY") {
+        Key_only_objects.push(e);
+      }
+    });
+    find_Child();
+  };
+  const key_value_pair = () => {
+    Key_Value_Block = [];
+    ocrData?.message.body.Blocks.map((e) => {
+      if (e.BlockType === "KEY_VALUE_SET") {
+        Key_Value_Block.push(e);
+      }
+    });
+    Filter_KEY_EntityTypes();
   };
 
   return (
@@ -94,7 +175,13 @@ function Home(props) {
       <button onClick={scanInvoice}>Upload</button>
       <br />
       <br />
-      <button onClick={() => console.log(ocrData)}>console</button>
+      <button
+        onClick={() => {
+          console.log(ocrData);
+        }}
+      >
+        console
+      </button>
       <br />
       <button onClick={getOcrData}> get data from ocr</button>
       {ocrData ? (
@@ -103,15 +190,15 @@ function Home(props) {
         <h1> Press, "get data from ocr" and wait till you see data.</h1>
       )}
       <div style={{ padding: "2%" }}>
-        {ocrData?.message.body.Blocks.map((e, index) =>
+        {/* {ocrData?.message.body.Blocks.map((e, index) =>
           
-            e.BlockType === "LINE" ? (
-              <h6 key={index}>{e.Text}</h6>
+            e.BlockType === "KEY_VALUE_SET" ? (
+              <h6 key={index}>{e.EntityTypes[0]}</h6>
             ) : null
          
-        )}
+        )} */}
 
-
+        <button onClick={key_value_pair}>click to filter key value pair</button>
       </div>
     </div>
   );
