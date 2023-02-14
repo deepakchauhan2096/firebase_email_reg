@@ -1,4 +1,3 @@
-import { async } from "@firebase/util";
 import React, { useState } from "react";
 import { TesseractService } from "./TesseractService";
 
@@ -85,32 +84,30 @@ function Home(props) {
   const find_words_for_key_value = () => {
     final_array = [];
     all_Key_value_ids.map((values) => {
+      word_from_key = "";
       values.key.map((id) => {
         ocrData?.message.body.Blocks.map((e) => {
-          if (e.BlockType === "WORD") {
-            if (e.Id === id.id) {
-              word_from_key = e.Text;
-            }
+          if (e.Id === id.id) {
+            word_from_key = word_from_key + e.Text;
           }
         });
       });
-
-      all_Key_value_ids[0].value.map((id) => {
+      values.value.map((id) => {
         ocrData?.message.body.Blocks.map((e) => {
-          if (e.Id === id.id) {
-            e.Relationships.map((ref_id) => {
+          if (id.id == e.Id) {
+            e.Relationships?.map((ref_id) => {
               temp_value_id_store = ref_id.Ids;
             });
           }
           if (temp_value_id_store == e.Id) {
-            temp_selected_only = e.Text ?? e.SelectionStatus;
+            temp_selected_only = e.SelectionStatus || e.Text;
           }
         });
       });
       final_array.push({ key: word_from_key, value: temp_selected_only });
     });
     if (final_array) {
-      console.log(final_array);
+      console.table(final_array);
     }
   };
 
@@ -137,7 +134,7 @@ function Home(props) {
       });
       all_Key_value_ids.push(key_value_ids_only);
     });
-    // console.log(all_Key_value_ids);
+    console.log(all_Key_value_ids);
     find_words_for_key_value();
   };
   const Filter_KEY_EntityTypes = () => {
