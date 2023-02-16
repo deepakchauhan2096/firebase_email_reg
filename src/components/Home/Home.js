@@ -85,6 +85,7 @@ function Home(props) {
     final_array = [];
     all_Key_value_ids.map((values) => {
       word_from_key = "";
+
       values.key.map((id) => {
         ocrData?.message.body.Blocks.map((e) => {
           if (e.Id === id.id) {
@@ -99,9 +100,15 @@ function Home(props) {
               temp_value_id_store = ref_id.Ids;
             });
           }
-          if (temp_value_id_store == e.Id) {
-            temp_selected_only = e.SelectionStatus || e.Text;
-          }
+          e.Relationships?.map((toLIne_ID) => {
+            toLIne_ID.Ids?.map((line_id) => {
+              if (temp_value_id_store == line_id) {
+                if (e.BlockType == "SELECTION_ELEMENT") {
+                  temp_selected_only = e.Text;
+                }
+              }
+            });
+          });
         });
       });
       final_array.push({ key: word_from_key, value: temp_selected_only });
@@ -148,7 +155,7 @@ function Home(props) {
   };
   const key_value_pair = () => {
     Key_Value_Block = [];
-    ocrData?.message.body.Blocks.map((e) => {
+    ocrData?.message.body.Blocks?.map((e) => {
       if (e.BlockType === "KEY_VALUE_SET") {
         Key_Value_Block.push(e);
       }
