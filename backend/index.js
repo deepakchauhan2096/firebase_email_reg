@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const request = require("request");
-const { TextractDocument, TextractIdentity } = require("amazon-textract-response-parser");
+
 var storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
 // const upload = multer({ dest: 'uploads/' })

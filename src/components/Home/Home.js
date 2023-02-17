@@ -6,6 +6,8 @@ function Home(props) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState([]);
   const [filename, setFilename] = useState(null);
   const [ocrData, setOcrData] = useState();
+  const [ocrDataBody, setOcrDataBody] = useState();
+
   const tesseractService = new TesseractService();
 
   const handleFileChange = async (files) => {
@@ -62,105 +64,22 @@ function Home(props) {
 
   const getOcrData = async () => {
     alert("wait for 60 sec. ");
+    setOcrData();
+    setOcrDataBody();
     try {
       const res = await tesseractService.GetDataFromOcr();
       setOcrData(res);
+      if (res) {
+        const entries = Object.entries(res.message.body);
+        var objs = entries.map((x) => ({
+          key: x[0],
+          value: x[1],
+        }));
+        setOcrDataBody(objs);
+      }
     } catch (error) {
       console.log(error);
     }
-  };
-
-  var Key_Value_Block = [];
-  var Key_only_objects = [];
-  let key_value_ids_only = [];
-  let temp_id_holder = [];
-  let temp_value_id_holder = [];
-  let all_Key_value_ids = [];
-  let word_from_key;
-  let temp_value_id_store;
-  let temp_selected_only;
-  let final_array = [];
-
-  const find_words_for_key_value = () => {
-    final_array = [];
-    all_Key_value_ids.map((values) => {
-      word_from_key = "";
-
-      values.key.map((id) => {
-        ocrData?.message.body.Blocks.map((e) => {
-          if (e.Id === id.id) {
-            word_from_key = word_from_key + e.Text;
-          }
-        });
-      });
-      values.value.map((id) => {
-        ocrData?.message.body.Blocks.map((e) => {
-          if (id.id == e.Id) {
-            e.Relationships?.map((ref_id) => {
-              temp_value_id_store = ref_id.Ids;
-            });
-          }
-          e.Relationships?.map((toLIne_ID) => {
-            toLIne_ID.Ids?.map((line_id) => {
-              if (temp_value_id_store == line_id) {
-                if (e.BlockType == "SELECTION_ELEMENT") {
-                  temp_selected_only = e.Text;
-                }
-              }
-            });
-          });
-        });
-      });
-      final_array.push({ key: word_from_key, value: temp_selected_only });
-    });
-    if (final_array) {
-      console.table(final_array);
-    }
-  };
-
-  const find_Child = () => {
-    all_Key_value_ids = [];
-    Key_only_objects.map((keys) => {
-      keys.Relationships.map((child) => {
-        if (child.Type === "CHILD") {
-          temp_id_holder = [];
-          child.Ids.map((id) => {
-            temp_id_holder.push({ id });
-          });
-        }
-        if (child.Type === "VALUE") {
-          temp_value_id_holder = [];
-          child.Ids.map((id) => {
-            temp_value_id_holder.push({ id });
-          });
-        }
-        key_value_ids_only = {
-          key: temp_id_holder,
-          value: temp_value_id_holder,
-        };
-      });
-      all_Key_value_ids.push(key_value_ids_only);
-    });
-    console.log(all_Key_value_ids);
-    find_words_for_key_value();
-  };
-  const Filter_KEY_EntityTypes = () => {
-    Key_only_objects = [];
-    Key_Value_Block.map((e) => {
-      if (e.EntityTypes[0] === "KEY") {
-        Key_only_objects.push(e);
-      }
-    });
-    find_Child();
-  };
-  const key_value_pair = () => {
-    Key_Value_Block = [];
-    ocrData?.message.body.Blocks?.map((e) => {
-      if (e.BlockType === "KEY_VALUE_SET") {
-        Key_Value_Block.push(e);
-      }
-    });
-    Filter_KEY_EntityTypes();
   };
 
   return (
@@ -181,7 +100,7 @@ function Home(props) {
       <br />
       <button
         onClick={() => {
-          console.log(ocrData);
+          console.log(ocrDataBody, ocrData);
         }}
       >
         console
@@ -193,16 +112,34 @@ function Home(props) {
       ) : (
         <h1> Press, "get data from ocr" and wait till you see data.</h1>
       )}
-      <div style={{ padding: "2%" }}>
-        {/* {ocrData?.message.body.Blocks.map((e, index) =>
-          
-            e.BlockType === "KEY_VALUE_SET" ? (
-              <h6 key={index}>{e.EntityTypes[0]}</h6>
-            ) : null
-         
-        )} */}
-
-        <button onClick={key_value_pair}>click to filter key value pair</button>
+      <div>
+        {ocrDataBody?.map((e, index) => (
+          <div style={{ margin: "1%" }}>
+            {e.value.map((v) => (
+              <h4
+                style={{
+                  background: "white",
+                  color: "#000",
+                  margin: "0.2%",
+                  width: "24%",
+                  height: "100px",
+                  overflow: "scroll",
+                  float: "left",
+                  border: "0.5px solid black",
+                  borderRadius: "7px",
+                  padding: "1%",
+                }}
+              >
+                {" "}
+                {e.key + ":"}<hr style={{ margin:"2%"}} />
+                <h4 style={{ color: "#91464d" }}>
+                  {v === "" ? "Not Filled" : v}
+                </h4>
+                <br />
+              </h4>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
