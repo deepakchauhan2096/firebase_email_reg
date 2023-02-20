@@ -1,4 +1,3 @@
-import { async } from "@firebase/util";
 import React, { useState } from "react";
 import { TesseractService } from "./TesseractService";
 
@@ -7,6 +6,8 @@ function Home(props) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState([]);
   const [filename, setFilename] = useState(null);
   const [ocrData, setOcrData] = useState();
+  const [ocrDataBody, setOcrDataBody] = useState();
+
   const tesseractService = new TesseractService();
 
   const handleFileChange = async (files) => {
@@ -63,19 +64,22 @@ function Home(props) {
 
   const getOcrData = async () => {
     alert("wait for 60 sec. ");
+    setOcrData();
+    setOcrDataBody();
     try {
       const res = await tesseractService.GetDataFromOcr();
       setOcrData(res);
+      // if (res) {
+      //   const entries = Object.entries(res.message.body);
+      //   var objs = entries.map((x) => ({
+      //     key: x[0],
+      //     value: x[1],
+      //   }));
+      //   setOcrDataBody(objs);
+      // }
     } catch (error) {
       console.log(error);
     }
-  };
-  const blockTypeMap = {
-    KEY_VALUE_SET: "Key-Value Set",
-    PAGE: "Page",
-    LINE: "Line",
-    WORD: "Word",
-    TABLE: "Table"
   };
 
   return (
@@ -94,7 +98,13 @@ function Home(props) {
       <button onClick={scanInvoice}>Upload</button>
       <br />
       <br />
-      <button onClick={() => console.log(ocrData)}>console</button>
+      <button
+        onClick={() => {
+          console.log(ocrDataBody, ocrData);
+        }}
+      >
+        console
+      </button>
       <br />
       <button onClick={getOcrData}> get data from ocr</button>
       {ocrData ? (
@@ -102,16 +112,35 @@ function Home(props) {
       ) : (
         <h1> Press, "get data from ocr" and wait till you see data.</h1>
       )}
-      <div style={{ padding: "2%" }}>
-        {ocrData?.message.body.Blocks.map((e, index) =>
-          
-            e.BlockType === "LINE" ? (
-              <h6 key={index}>{e.Text}</h6>
-            ) : null
-         
-        )}
-
-
+      <div>
+        {ocrDataBody?.map((e, index) => (
+          <div style={{ margin: "1%" }}>
+            {e.value.map((v) => (
+              <div
+   
+                style={{
+                  background: "white",
+                  color: "#000",
+                  margin: "0.2%",
+                  width: "24%",
+                  height: "100px",
+                  overflow: "scroll",
+                  float: "left",
+                  border: "0.5px solid black",
+                  borderRadius: "7px",
+                  padding: "1%",
+                }}
+              >
+      
+                {e.key + ":"}<hr style={{ margin:"2%"}} />
+                <h4   style={{ color: "#91464d" }}>
+                  {v === "" ? "Not Filled" : v}
+                </h4>
+                <br />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
