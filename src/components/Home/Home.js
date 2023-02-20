@@ -69,14 +69,14 @@ function Home(props) {
     try {
       const res = await tesseractService.GetDataFromOcr();
       setOcrData(res);
-      if (res) {
-        const entries = Object.entries(res.message.body);
-        var objs = entries.map((x) => ({
-          key: x[0],
-          value: x[1],
-        }));
-        setOcrDataBody(objs);
-      }
+      // if (res) {
+      //   const entries = Object.entries(res.message.body);
+      //   var objs = entries.map((x) => ({
+      //     key: x[0],
+      //     value: x[1],
+      //   }));
+      //   setOcrDataBody(objs);
+      // }
     } catch (error) {
       console.log(error);
     }
@@ -116,7 +116,8 @@ function Home(props) {
         {ocrDataBody?.map((e, index) => (
           <div style={{ margin: "1%" }}>
             {e.value.map((v) => (
-              <h4
+              <div
+   
                 style={{
                   background: "white",
                   color: "#000",
@@ -130,13 +131,13 @@ function Home(props) {
                   padding: "1%",
                 }}
               >
-                {" "}
+      
                 {e.key + ":"}<hr style={{ margin:"2%"}} />
-                <h4 style={{ color: "#91464d" }}>
+                <h4   style={{ color: "#91464d" }}>
                   {v === "" ? "Not Filled" : v}
                 </h4>
                 <br />
-              </h4>
+              </div>
             ))}
           </div>
         ))}
